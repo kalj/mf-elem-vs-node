@@ -97,23 +97,37 @@ void mult_node_centric(number *dst, const number *src, const number *a, const nu
   const int interior_nodes = intervals-1;
   const int N = intervals+1;
 
-  for (int n1=0; n1 < interior_nodes; n1++) {
-    for (int n2=0; n2 < interior_nodes; n2++) {
-      for (int n3=0; n3 < interior_nodes; n3++) {
+  for (int n1=1; n1 < intervals; n1++) {
+    for (int n2=1; n2 < intervals; n2++) {
+      for (int n3=1; n3 < intervals; n3++) {
 
-        const int my_idx = (n3+1) + N*((n2+1)  + N*(n1+1));
+        const int my_idx = n3 + N*(n2 + N*n1);
 
 
         number tmp = 0;
         // go through all neighbors
-        for (int i1=0; i1 <3; i1++) {
-          for (int i2=0; i2 <3; i2++) {
-            for (int i3=0; i3 <3; i3++) {
-              const int K = 0; // FIXME!
-              const number a = 1.0; // FIXME!
+        for (int i1=-1; i1<2; i1++) {
+          for (int i2=-1; i2<2; i2++) {
+            for (int i3=-1; i3<2; i3++) {
+
+              // type of coupling:
+              const int type  = i1*i1 + i2*i2 + i3*i3;
+              // this is now:
+              //    0: for the node coupled with itself.            a = 1/3 * 1/3 * 1/3
+              //    1: for coupling along a coordinate axis         a = 1/3 * 1/3 * 1/6
+              //    2: for coupling along the diagonal of a plane   a = 1/3 * 1/6 * 1/6
+              //    3: for coupling along the diagonal of a cube    a = 1/3 * 1/6 * 1/6
+
+              // this can be summarized as:
+              const number a = 1.0/(27* (1<<type));
+
+              number myA = 0; // must sum up values from contributing cells
+
+              myA *= (1<<type)/8.0; // divide by number of values to get average
 
               const int global_idx = (n3+i3) + N*((n2+i2)  + N*(n1+i1));
-              tmp += src[global_idx]*a*A[K];
+
+              tmp += src[global_idx]*a*myA;
             }
           }
         }
