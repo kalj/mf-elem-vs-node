@@ -94,7 +94,6 @@ void mult_elem_centric(number *dst, const number *src, const number *a,
 template <int dim>
 void mult_node_centric(number *dst, const number *src, const number *a, const number *A, const int intervals)
 {
-  const int interior_nodes = intervals-1;
   const int N = intervals+1;
 
   for (int n1=1; n1 < intervals; n1++) {
@@ -121,9 +120,25 @@ void mult_node_centric(number *dst, const number *src, const number *a, const nu
               // this can be summarized as:
               const number a = 1.0/(27* (1<<type));
 
-              number myA = 0; // must sum up values from contributing cells
+              number myA = 0;
+              // lower loop bound: (i<1) ? -1 : 0
+              // upper loop bound: (i>=0) ? 1 : 0
 
-              myA *= (1<<type)/8.0; // divide by number of values to get average
+
+              for(int k1 = -(i1<1); k1<(i1>=0) ; ++k1) {
+                for(int k2 = -(i2<1); k2<(i2>=0) ; ++k2) {
+                  for(int k3 = -(i3<1); k3<(i3>=0) ; ++k3) {
+                    myA += A[n3+k3 + intervals*(n2+k2 + intervals*(n1+k1))];
+                  }
+                }
+              }
+
+              // The row below would divide by the number of elements
+              // contributing, i.e. compute an average A, but since the value of
+              // a should also be weighted by the inverse of this number, we
+              // just skip it!
+
+              // myA *= (1<<type)/8.0;
 
               const int global_idx = (n3+i3) + N*((n2+i2)  + N*(n1+i1));
 
