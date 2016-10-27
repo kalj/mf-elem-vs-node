@@ -31,28 +31,28 @@ void mult_elem_centric(number *dst, const number *src, const number *a,
   number v[ndofs];
 
   // loop over all colors
-  for (int color1=0; color1 <2; color1++) {
+  for (int color3=0; color3 <2; color3++) {
     for (int color2=0; color2 <2; color2++) {
-      for (int color3=0; color3 <2; color3++) {
+      for (int color1=0; color1 <2; color1++) {
 
 
         // loop over all elements
-        for (int k1=0; k1 < intervals_in_color; k1++) {
+        for (int k3=0; k3 < intervals_in_color; k3++) {
           for (int k2=0; k2 < intervals_in_color; k2++) {
-            for (int k3=0; k3 < intervals_in_color; k3++) {
+            for (int k1=0; k1 < intervals_in_color; k1++) {
 
-              const int K = (color3 + k3*2) + intervals*((color2 + k2*2) + intervals*(color1 + k1*2));
+              const int K = (color1 + k1*2) + intervals*((color2 + k2*2) + intervals*(color3 + k3*2));
 
               //---------------------------------------------------------------
               // element-local operation
               //---------------------------------------------------------------
 
               // read local dof values
-              for (int i1=0; i1 <2; i1++) {
+              for (int i3=0; i3 <2; i3++) {
                 for (int i2=0; i2 <2; i2++) {
-                  for (int i3=0; i3 <2; i3++) {
-                    const int global_idx = (i3 + color3 + k3*2) + N*((i2 + color2 + k2*2) + N*(i1 + color1 + k1*2));
-                    u[i3+2*(i2+2*i1)] = src[global_idx];
+                  for (int i1=0; i1 <2; i1++) {
+                    const int global_idx = (i1 + color1 + k1*2) + N*((i2 + color2 + k2*2) + N*(i3 + color3 + k3*2));
+                    u[i1+2*(i2+2*i3)] = src[global_idx];
                   }
                 }
               }
@@ -71,11 +71,11 @@ void mult_elem_centric(number *dst, const number *src, const number *a,
 
 
               // write back local dof values
-              for (int i1=0; i1 <2; i1++) {
+              for (int i3=0; i3 <2; i3++) {
                 for (int i2=0; i2 <2; i2++) {
-                  for (int i3=0; i3 <2; i3++) {
-                    const int global_idx = (i3 + color3 + k3*2) + N*((i2 + color2 + k2*2) + N*(i1 + color1 + k1*2));
-                    dst[global_idx] += v[i3+2*(i2+2*i1)];
+                  for (int i1=0; i1 <2; i1++) {
+                    const int global_idx = (i1 + color1 + k1*2) + N*((i2 + color2 + k2*2) + N*(i3 + color3 + k3*2));
+                    dst[global_idx] += v[i1+2*(i2+2*i3)];
                   }
                 }
               }
@@ -96,18 +96,18 @@ void mult_node_centric(number *dst, const number *src, const number *a, const nu
 {
   const int N = intervals+1;
 
-  for (int n1=1; n1 < intervals; n1++) {
+  for (int n3=1; n3 < intervals; n3++) {
     for (int n2=1; n2 < intervals; n2++) {
-      for (int n3=1; n3 < intervals; n3++) {
+      for (int n1=1; n1 < intervals; n1++) {
 
-        const int my_idx = n3 + N*(n2 + N*n1);
+        const int my_idx = n1 + N*(n2 + N*n3);
 
 
         number tmp = 0;
         // go through all neighbors
-        for (int i1=-1; i1<2; i1++) {
+        for (int i3=-1; i3<2; i3++) {
           for (int i2=-1; i2<2; i2++) {
-            for (int i3=-1; i3<2; i3++) {
+            for (int i1=-1; i1<2; i1++) {
 
               // type of coupling:
               const int type  = i1*i1 + i2*i2 + i3*i3;
@@ -125,10 +125,10 @@ void mult_node_centric(number *dst, const number *src, const number *a, const nu
               // upper loop bound: (i>=0) ? 1 : 0
 
 
-              for(int k1 = -(i1<1); k1<(i1>=0) ; ++k1) {
+              for(int k3 = -(i3<1); k3<(i3>=0) ; ++k3) {
                 for(int k2 = -(i2<1); k2<(i2>=0) ; ++k2) {
-                  for(int k3 = -(i3<1); k3<(i3>=0) ; ++k3) {
-                    myA += A[n3+k3 + intervals*(n2+k2 + intervals*(n1+k1))];
+                  for(int k1 = -(i1<1); k1<(i1>=0) ; ++k1) {
+                    myA += A[n1+k1 + intervals*(n2+k2 + intervals*(n3+k3))];
                   }
                 }
               }
@@ -140,7 +140,7 @@ void mult_node_centric(number *dst, const number *src, const number *a, const nu
 
               // myA *= (1<<type)/8.0;
 
-              const int global_idx = (n3+i3) + N*((n2+i2)  + N*(n1+i1));
+              const int global_idx = (n1+i1) + N*((n2+i2)  + N*(n3+i3));
 
               tmp += src[global_idx]*a*myA;
             }
