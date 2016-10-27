@@ -176,11 +176,11 @@ int main(int argc, char *argv[])
 
   double t = get_time();
   mult_elem_centric<dim>(u,v,a,A,Ninterv);
-  printf("elapsed time: %g s\n",get_time()-t);
+  printf("element-centric: %g s\n",get_time()-t);
 
   t = get_time();
   mult_node_centric<dim>(u,v,a,A,Ninterv);
-  printf("elapsed time: %g s\n",get_time()-t);
+  printf("node-centric:    %g s\n",get_time()-t);
 
 
   delete[] u;
